@@ -8,67 +8,46 @@ from database import RecordTable
 class ExpressionGameRowWidget(QtWidgets.QWidget):
     solved = QtCore.pyqtSignal(int)
 
-    def __init__(self, parent, target_value: int, score: int = None, digits: int = 8):
+    def __init__(self, parent, nesting: int = 0, score: int = None):
         QtWidgets.QWidget.__init__(self, parent)
-        self.digits = digits
+        self.nesting = nesting
+        self.python_expr = random_expression(nesting)
+        self.target_value = eval(self.python_expr)
+        self.readable_expr = translate_expression(self.python_expr)
+
         self.setup_ui()
-
-        self.target_label.setText(str(target_value))
-        self.target_value = target_value
-
-        self.result = 0
-        self.result_label.setText(str(self.result))
 
         if score is not None:
             self.score = score
         else:
-            self.score = 15 * bin(target_value)[2:].count('1')
+            self.score = round(10 * (nesting + 2)**1.7)
 
     def setup_ui(self):
         self.horizontalLayout = QtWidgets.QHBoxLayout(self)
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout.setObjectName("horizontalLayout")
-        self.target_label = QtWidgets.QLabel(self)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.target_label.sizePolicy().hasHeightForWidth())
-        self.target_label.setSizePolicy(sizePolicy)
-        self.target_label.setMinimumSize(QtCore.QSize(40, 40))
-        self.target_label.setMaximumSize(QtCore.QSize(40, 40))
-        self.target_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.target_label.setObjectName("target_label")
-        self.horizontalLayout.addWidget(self.target_label)
+        self.expression_label = QtWidgets.QLabel(self)
+        self.expression_label.setAlignment(QtCore.Qt.AlignRight)
+        self.expression_label.setObjectName("target_label")
+        self.expression_label.setText(self.readable_expr)
+        font = self.expression_label.font()
+        font.setPointSize(26)
+        self.expression_label.setFont(font)
+        self.horizontalLayout.addWidget(self.expression_label)
 
-        self.buttons = []
-        for i in range(self.digits):
+        for btn_text in '01':
             btn = QtWidgets.QPushButton(self)
             sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
             sizePolicy.setHorizontalStretch(0)
             sizePolicy.setVerticalStretch(0)
             sizePolicy.setHeightForWidth(btn.sizePolicy().hasHeightForWidth())
-            # sizePolicy.setHeightForWidth(True)
-            # sizePolicy.setWidthForHeight(True)
             btn.setSizePolicy(sizePolicy)
             btn.setMinimumSize(QtCore.QSize(40, 40))
             btn.setMaximumSize(QtCore.QSize(40, 40))
-            btn.setObjectName(f"pushButton{i + 1}")
-            btn.setText('0')
+            btn.setObjectName(f"pushButton{btn_text}")
+            btn.setText(btn_text)
             self.horizontalLayout.addWidget(btn)
-            self.buttons.append(btn)
-            self._attach_btn_handler(btn, 2 ** (self.digits - i - 1))
-
-        self.result_label = QtWidgets.QLabel(self)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.result_label.sizePolicy().hasHeightForWidth())
-        self.result_label.setSizePolicy(sizePolicy)
-        self.result_label.setMinimumSize(QtCore.QSize(40, 40))
-        self.result_label.setMaximumSize(QtCore.QSize(40, 40))
-        self.result_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.result_label.setObjectName("result_label")
-        self.horizontalLayout.addWidget(self.result_label)
+            self._attach_btn_handler(btn, int(btn_text) == self.target_value)
 
         QtCore.QMetaObject.connectSlotsByName(self)
 
@@ -79,22 +58,18 @@ class ExpressionGameRowWidget(QtWidgets.QWidget):
             return True
         return False
 
-    def _attach_btn_handler(self, btn: QtWidgets.QPushButton, value: int):
+    def _attach_btn_handler(self, btn: QtWidgets.QPushButton, right: bool):
         def handler(self_):
-            if btn.text() == '0':
-                btn.setText('1')
-                self.result += value
-                self.result_label.setText(str(self.result))
+            if right:
+                self.solved.emit(self.score)
             else:
-                btn.setText('0')
-                self.result -= value
-                self.result_label.setText(str(self.result))
-            self._check_correctness()
+                self.solved.emit(-self.score)
+            self.deleteLater()
         btn.clicked.connect(handler)
 
 
-class Ui_BinaryGame(object):
-    def setupUi(self, MainWindow, digits=8):
+class Ui_ExpressionGame(object):
+    def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(474, 360)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
@@ -120,33 +95,6 @@ class Ui_BinaryGame(object):
         self.verticalLayout.addLayout(self.horizontalLayout_3)
         spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacerItem1)
-        self.horizontalLayout = QtWidgets.QHBoxLayout()
-        self.horizontalLayout.setObjectName("horizontalLayout")
-        self.label_11 = QtWidgets.QLabel(self.centralwidget)
-        self.label_11.setMinimumSize(QtCore.QSize(40, 0))
-        self.label_11.setMaximumSize(QtCore.QSize(40, 16777215))
-        self.label_11.setText("")
-        self.label_11.setObjectName("label_11")
-        self.horizontalLayout.addWidget(self.label_11)
-        for i in range(digits - 1, -1, -1):
-            new_digit_label = QtWidgets.QLabel(self.centralwidget)
-            sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Preferred)
-            sizePolicy.setHorizontalStretch(0)
-            sizePolicy.setVerticalStretch(0)
-            sizePolicy.setHeightForWidth(new_digit_label.sizePolicy().hasHeightForWidth())
-            new_digit_label.setSizePolicy(sizePolicy)
-            new_digit_label.setMinimumSize(QtCore.QSize(40, 0))
-            new_digit_label.setMaximumSize(QtCore.QSize(40, 16777215))
-            new_digit_label.setAlignment(QtCore.Qt.AlignCenter)
-            self.horizontalLayout.addWidget(new_digit_label)
-            new_digit_label.setText(str(2**i))
-        self.label_12 = QtWidgets.QLabel(self.centralwidget)
-        self.label_12.setMinimumSize(QtCore.QSize(40, 0))
-        self.label_12.setMaximumSize(QtCore.QSize(40, 16777215))
-        self.label_12.setText("")
-        self.label_12.setObjectName("label_12")
-        self.horizontalLayout.addWidget(self.label_12)
-        self.verticalLayout.addLayout(self.horizontalLayout)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 474, 20))
@@ -158,40 +106,28 @@ class Ui_BinaryGame(object):
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
-
-        self.retranslateUi(MainWindow)
-        QtCore.QMetaObject.connectSlotsByName(MainWindow)
-
-    def retranslateUi(self, MainWindow):
-        _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "Binary game"))
-        self.label_13.setText(_translate("MainWindow", "Счёт: "))
-        self.score_value_label.setText(_translate("MainWindow", "0"))
+        MainWindow.setWindowTitle("Expression game")
+        self.label_13.setText("Счёт: ")
+        self.score_value_label.setText("0")
 
 
-class ExpressionGame(QtWidgets.QMainWindow, Ui_BinaryGame):
+class ExpressionGame(QtWidgets.QMainWindow, Ui_ExpressionGame):
     closed = QtCore.pyqtSignal()
-    game_id = 1
+    game_id = 2
     max_rows = 5
     levels = {
-        1: {'cooldown_s': 6, 'min_digits': 1, 'max_digits': 1, 'min_digit': 0, 'max_digit': 3, 'rows_until_next': 2},
-        2: {'cooldown_s': 6, 'min_digits': 1, 'max_digits': 1, 'min_digit': 4, 'max_digit': 7, 'rows_until_next': 2},
-        3: {'cooldown_s': 6, 'min_digits': 2, 'max_digits': 2, 'min_digit': 0, 'max_digit': 6, 'rows_until_next': 4},
-        4: {'cooldown_s': 5, 'min_digits': 3, 'max_digits': 3, 'min_digit': 0, 'max_digit': 6, 'rows_until_next': 4},
-        5: {'cooldown_s': 5, 'min_digits': 4, 'max_digits': 4, 'min_digit': 0, 'max_digit': 6, 'rows_until_next': 4},
-        6: {'cooldown_s': 5, 'min_digits': 3, 'max_digits': 5, 'min_digit': 0, 'max_digit': 6, 'rows_until_next': 5},
-        7: {'cooldown_s': 4, 'min_digits': 3, 'max_digits': 6, 'min_digit': 0, 'max_digit': 7, 'rows_until_next': 5},
-        8: {'cooldown_s': 4, 'min_digits': 4, 'max_digits': 7, 'min_digit': 0, 'max_digit': 7, 'rows_until_next': 7}}
+        1: {'cooldown_s': 5, 'min_nesting': 0, 'max_nesting': 0, 'rows_until_next': 4},
+        2: {'cooldown_s': 7, 'min_nesting': 1, 'max_nesting': 1, 'rows_until_next': 6},
+        3: {'cooldown_s': 9, 'min_nesting': 2, 'max_nesting': 2, 'rows_until_next': 8}}
     default_level = {
-        'cooldown_s': 3, 'min_digits': 1, 'max_digits': 8, 'min_digit': 0, 'max_digit': 7, 'rows_until_next': 7}
-    digits = 8
+        'cooldown_s': 8, 'min_nesting': 0, 'max_nesting': 2, 'rows_until_next': 6}
 
     def __init__(self, parent=None, db=None):
         super().__init__(parent)
-        self.setupUi(self, self.digits)
+        self.setupUi(self)
         self.quit_action.triggered.connect(self.close)
         self.db = db
-        self.cooldown_s = 6
+        self.cooldown_s = self.levels[1]['cooldown_s']
         self.timer = None
         self.reset_timer()
         self.score = 0
@@ -211,12 +147,10 @@ class ExpressionGame(QtWidgets.QMainWindow, Ui_BinaryGame):
             self.close()
 
         level_data = self.levels.get(self.level, self.default_level)
-        digits_amount = random.randint(level_data['min_digits'], level_data['max_digits'])
-        digits = list(map((2).__pow__, range(level_data['min_digit'], level_data['max_digit'] + 1)))
-        target_value = sum(random.sample(digits, k=digits_amount))
-        score = self.level * 4 - level_data['min_digit'] * 2 + digits_amount * 3
+        nesting = random.randint(level_data['min_nesting'], level_data['max_nesting'])
+        score = self.level * 3 + round(9 * (nesting + 2) ** 1.7)
 
-        rw = ExpressionGameRowWidget(self, target_value, score, self.digits)
+        rw = ExpressionGameRowWidget(self, nesting, score)
         self.centralwidget.layout().insertWidget(2, rw)
         rw.solved.connect(self.solved)
         self.unsolved_rows += 1
@@ -251,7 +185,36 @@ class ExpressionGame(QtWidgets.QMainWindow, Ui_BinaryGame):
         msgbox.show()
 
 
+def translate_expression(expr: str):
+    new_expr = expr
+    for python_op, new_op in zip(('and', 'or', '^', '<=', '==', 'not'), ('∧', '∨', '⊕', '→', '≡', '¬')):
+        new_expr = new_expr.replace(python_op, new_op)
+    return new_expr
+
+
+def random_expression(nesting=0):
+    if nesting == 0:
+        d1, d2 = random.randint(0, 1), random.randint(0, 1)
+    elif nesting == 1:
+        d1, d2 = random.sample([random.randint(0, 1), '(' + random_expression(0) + ')'], k=2)
+    else:
+        n1, n2 = nesting % 2 + nesting // 2, (nesting - 1) % 2 + (nesting - 1) // 2
+        d1 = '(' + random_expression(n1) + ')'
+        d2 = '(' + random_expression(n2) + ')'
+    op = random.choice(('and', 'or', '^', '<=', '==', 'not'))
+    if op == 'not':
+        return f'{op} {d1}'
+    return f'{d1} {op} {d2}'
+
+
 if __name__ == '__main__':
+    # for nesting in range(7):
+    #     # n1, n2 = nesting % 2 + nesting // 2, (nesting - 1) % 2 + (nesting - 1) // 2
+    #     # print(n1, n2)
+    #     exp = random_expression(nesting)
+    #     print(exp)
+    #     print(translate_expression(exp))
+    # https://ru.wikipedia.org/wiki/%D0%A1%D0%BF%D0%B8%D1%81%D0%BE%D0%BA_%D0%BB%D0%BE%D0%B3%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%B8%D1%85_%D1%81%D0%B8%D0%BC%D0%B2%D0%BE%D0%BB%D0%BE%D0%B2
     app = QtWidgets.QApplication(sys.argv)
     ex = ExpressionGame()
     ex.show()

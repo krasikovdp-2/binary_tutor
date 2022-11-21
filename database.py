@@ -101,7 +101,7 @@ class Database:
             title STRING)''')
 
         cur.execute('''INSERT INTO games (title, id)
-            VALUES ('Binary game', 1)''')
+            VALUES ('Binary game', 1), ('Expression game', 2)''')
 
         cur.execute('''CREATE TABLE records (
             id       INTEGER PRIMARY KEY ASC AUTOINCREMENT
