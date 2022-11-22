@@ -52,6 +52,11 @@ class StartWindow(QMainWindow, Ui_StartWindow):
             game.closed.connect(self.show)
         return inner
 
+    def keyPressEvent(self, e):
+        screen = QtWidgets.QApplication.primaryScreen()
+        screenshot = screen.grabWindow(self.winId())
+        screenshot.save('shot.png', 'png')
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

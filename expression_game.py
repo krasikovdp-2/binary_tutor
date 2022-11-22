@@ -184,6 +184,11 @@ class ExpressionGame(QtWidgets.QMainWindow, Ui_ExpressionGame):
         record_table.show()
         msgbox.show()
 
+    def keyPressEvent(self, e):
+        screen = QtWidgets.QApplication.primaryScreen()
+        screenshot = screen.grabWindow(self.winId())
+        screenshot.save('shot.png', 'png')
+
 
 def translate_expression(expr: str):
     new_expr = expr

@@ -247,3 +247,8 @@ class BinaryGame(QtWidgets.QMainWindow, Ui_BinaryGame):
         record_table = RecordTable(self, self.db, int(self.score_value_label.text()), self.game_id)
         record_table.show()
         msgbox.show()
+
+    def keyPressEvent(self, e):
+        screen = QtWidgets.QApplication.primaryScreen()
+        screenshot = screen.grabWindow(self.winId())
+        screenshot.save('shot.png', 'png')

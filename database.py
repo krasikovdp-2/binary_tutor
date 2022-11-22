@@ -147,6 +147,11 @@ class GamesTable(QMainWindow, Ui_RecordTable):
     def closeEvent(self, event):
         self.closed.emit()
 
+    def keyPressEvent(self, e):
+        screen = QtWidgets.QApplication.primaryScreen()
+        screenshot = screen.grabWindow(self.winId())
+        screenshot.save('shot.png', 'png')
+
 
 class RecordTable(QMainWindow, Ui_RecordTable):
     closed = QtCore.pyqtSignal()
@@ -216,6 +221,11 @@ class RecordTable(QMainWindow, Ui_RecordTable):
 
     def closeEvent(self, event):
         self.closed.emit()
+
+    def keyPressEvent(self, e):
+        screen = QtWidgets.QApplication.primaryScreen()
+        screenshot = screen.grabWindow(self.winId())
+        screenshot.save('shot.png', 'png')
 
 
 if __name__ == '__main__':
