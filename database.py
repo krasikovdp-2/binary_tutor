@@ -188,7 +188,6 @@ class RecordTable(QMainWindow, Ui_RecordTable):
             cur = self.db.con.cursor()
             id_score = cur.execute(f'''SELECT id, score FROM records
             WHERE game = {self.game} AND nickname = '{nickname}' ''').fetchone()
-            print(id_score)
             if id_score:
                 id_, old_score = id_score
                 if self.score > old_score:

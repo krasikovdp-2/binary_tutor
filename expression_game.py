@@ -71,7 +71,7 @@ class ExpressionGameRowWidget(QtWidgets.QWidget):
 class Ui_ExpressionGame(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(474, 360)
+        MainWindow.resize(640, 360)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.centralwidget)
@@ -117,10 +117,10 @@ class ExpressionGame(QtWidgets.QMainWindow, Ui_ExpressionGame):
     max_rows = 5
     levels = {
         1: {'cooldown_s': 5, 'min_nesting': 0, 'max_nesting': 0, 'rows_until_next': 4},
-        2: {'cooldown_s': 7, 'min_nesting': 1, 'max_nesting': 1, 'rows_until_next': 6},
-        3: {'cooldown_s': 9, 'min_nesting': 2, 'max_nesting': 2, 'rows_until_next': 8}}
+        2: {'cooldown_s': 10, 'min_nesting': 1, 'max_nesting': 1, 'rows_until_next': 6},
+        3: {'cooldown_s': 20, 'min_nesting': 2, 'max_nesting': 2, 'rows_until_next': 6}}
     default_level = {
-        'cooldown_s': 8, 'min_nesting': 0, 'max_nesting': 2, 'rows_until_next': 6}
+        'cooldown_s': 16, 'min_nesting': 0, 'max_nesting': 2, 'rows_until_next': 6}
 
     def __init__(self, parent=None, db=None):
         super().__init__(parent)
@@ -208,13 +208,6 @@ def random_expression(nesting=0):
 
 
 if __name__ == '__main__':
-    # for nesting in range(7):
-    #     # n1, n2 = nesting % 2 + nesting // 2, (nesting - 1) % 2 + (nesting - 1) // 2
-    #     # print(n1, n2)
-    #     exp = random_expression(nesting)
-    #     print(exp)
-    #     print(translate_expression(exp))
-    # https://ru.wikipedia.org/wiki/%D0%A1%D0%BF%D0%B8%D1%81%D0%BE%D0%BA_%D0%BB%D0%BE%D0%B3%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%B8%D1%85_%D1%81%D0%B8%D0%BC%D0%B2%D0%BE%D0%BB%D0%BE%D0%B2
     app = QtWidgets.QApplication(sys.argv)
     ex = ExpressionGame()
     ex.show()
